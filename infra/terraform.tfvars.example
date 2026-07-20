@@ -7,3 +7,11 @@ harness_manager_endpoint = "https://app.harness.io"
 harness_delegate_image   = "us-docker.pkg.dev/gar-prod-setup/harness-public/harness/delegate:26.06.89501"
 harness_replicas         = 1
 harness_upgrader_enabled = true
+
+# --- Harness GitOps Agent ---
+gitops_namespace          = "harness-gitops"
+gitops_org_identifier     = "default"
+gitops_project_identifier = "default_project"
+gitops_agent_identifier   = "harnessagent"
+gitops_agent_secret       = "YOUR_GITOPS_AGENT_SECRET"
+gitops_redis_password     = "YOUR_GITOPS_REDIS_PASSWORD"

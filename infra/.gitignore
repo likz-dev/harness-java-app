@@ -33,3 +33,8 @@ terraform.rc
 .env
 .env.*
 !.env.example
+
+# Downloaded Harness CLI archives / local binaries
+hc_*.tar.gz
+harness-v*.tar.gz
+/bin/
