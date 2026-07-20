@@ -1,0 +1,199 @@
+:root {
+  --ink: #0b1220;
+  --ink-mid: #121a2b;
+  --mist: #9aa8c0;
+  --paper: #e8eef8;
+  --line: rgba(232, 238, 248, 0.12);
+  --accent: #4da3ff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--paper);
+  background: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% -10%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(20, 40, 80, 0.55), transparent 65%),
+    linear-gradient(180deg, var(--ink-mid) 0%, var(--ink) 55%);
+  z-index: 0;
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 8vw, 5rem) clamp(1.5rem, 5vw, 3rem);
+  width: 100%;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mist);
+  animation: rise 0.7s ease both;
+}
+
+.brand {
+  margin: 0;
+  font-family: Outfit, "IBM Plex Sans", sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.75rem, 9vw, 5.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--paper);
+  animation: rise 0.75s 0.08s ease both;
+}
+
+.tagline {
+  margin: 1.25rem 0 0;
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  font-weight: 400;
+  color: var(--mist);
+  letter-spacing: 0.01em;
+  animation: rise 0.75s 0.16s ease both;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  animation: rise 0.8s 0.24s ease both;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(11, 18, 32, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.chip-accent {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.chip-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+.chip-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--paper);
+}
+
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.swatch {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.ops {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 1.75rem;
+  padding: 1.25rem clamp(1.5rem, 5vw, 3rem);
+  border-top: 1px solid var(--line);
+  background: rgba(11, 18, 32, 0.55);
+  animation: rise 0.7s 0.32s ease both;
+}
+
+.ops a {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--mist);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.ops a:hover,
+.ops a:focus-visible {
+  color: var(--accent);
+}
+
+.ops a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eyebrow,
+  .brand,
+  .tagline,
+  .status-row,
+  .ops {
+    animation: none;
+  }
+}
+
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .atmosphere {
+    background:
+      radial-gradient(ellipse 80% 55% at 50% -10%, rgba(77, 163, 255, 0.22), transparent 70%),
+      linear-gradient(180deg, var(--ink-mid) 0%, var(--ink) 55%);
+  }
+
+  .chip-accent {
+    border-color: rgba(77, 163, 255, 0.4);
+  }
+}
