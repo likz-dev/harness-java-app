@@ -60,6 +60,30 @@ mvn -B spring-boot:run
 `APP_COLOR` sets the UI accent / variant (`blue`, `green`, `amber`, `red`, `teal`). Default: `blue`.
 In Kubernetes / Harness CD, set env `APP_COLOR` and `APP_VERSION` (image tag shown on `/` and `/api/*`).
 
+## Verify Harness canary vs stable (Minikube)
+
+During a Harness canary step you get two Deployments:
+
+- `harness-java-web-app` — stable / primary (`harness.io/track=stable`)
+- `harness-java-web-app-canary` — canary (`harness.io/track=canary`)
+
+`kubectl port-forward svc/...` sticks to **one** pod for the whole session, so refreshes usually never show the canary. Forward each Deployment in its own terminal (`port-forward` does not support `-l`):
+
+```bash
+kubectl -n default port-forward deployment/harness-java-web-app 8080:8080          # stable (e.g. v14)
+# other terminal:
+kubectl -n default port-forward deployment/harness-java-web-app-canary 8081:8080   # canary (e.g. v15)
+```
+
+Or pick a pod by label:
+
+```bash
+kubectl -n default port-forward pod/$(kubectl -n default get pod -l harness.io/track=stable -o jsonpath='{.items[0].metadata.name}') 8080:8080
+kubectl -n default port-forward pod/$(kubectl -n default get pod -l harness.io/track=canary -o jsonpath='{.items[0].metadata.name}') 8081:8080
+```
+
+Open http://localhost:8080 for stable and http://localhost:8081 for canary.
+
 ## Docker Hub (summary)
 
 ```bash
