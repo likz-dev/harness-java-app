@@ -14,7 +14,7 @@ pipeline:
     - name: appColor
       type: String
       description: UI accent color (blue, green, amber, red, teal)
-      value: <+input>.default(blue)
+      value: <+input>.default(blue).selectOneFrom(blue,green,amber,red,teal)
   stages:
     - stage:
         name: harness-java-build
