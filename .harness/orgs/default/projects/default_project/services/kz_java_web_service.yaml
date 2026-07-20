@@ -31,6 +31,6 @@ service:
               valuesPaths:
                 - app/k8s/values.yaml
               skipResourceVersioning: false
-  gitOpsEnabled: true
+  gitOpsEnabled: false
   orgIdentifier: default
   projectIdentifier: default_project

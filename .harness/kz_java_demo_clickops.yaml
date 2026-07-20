@@ -67,29 +67,69 @@ pipeline:
         type: Deployment
         spec:
           deploymentType: Kubernetes
-          gitOpsEnabled: true
+          gitOpsEnabled: false
           execution:
             steps:
+              - stepGroup:
+                  name: Canary Deployment
+                  identifier: canaryDeployment
+                  steps:
+                    - step:
+                        name: Canary Deployment
+                        identifier: canaryDeploy
+                        type: K8sCanaryDeploy
+                        timeout: 10m
+                        spec:
+                          instanceSelection:
+                            type: Count
+                            spec:
+                              count: 1
+                          skipDryRun: false
+                    - step:
+                        name: Approve Canary
+                        identifier: approveCanary
+                        type: HarnessApproval
+                        timeout: 1d
+                        spec:
+                          approvalMessage: Verify the canary pod, then approve to promote.
+                          includePipelineExecutionHistory: true
+                          approvers:
+                            userGroups:
+                              - account.account_admins
+                            minimumCount: 1
+                            disallowPipelineExecutor: false
+                    - step:
+                        name: Canary Delete
+                        identifier: canaryDelete
+                        type: K8sCanaryDelete
+                        timeout: 10m
+                        spec: {}
+              - stepGroup:
+                  name: Primary Deployment
+                  identifier: primaryDeployment
+                  steps:
+                    - step:
+                        name: Rolling Deployment
+                        identifier: rollingDeploy
+                        type: K8sRollingDeploy
+                        timeout: 10m
+                        spec:
+                          skipDryRun: false
+                          pruningEnabled: false
+            rollbackSteps:
               - step:
-                  type: GitOpsUpdateReleaseRepo
-                  name: Update Release Repo
-                  identifier: updateReleaseRepo
+                  name: Canary Delete
+                  identifier: rollbackCanaryDelete
+                  type: K8sCanaryDelete
                   timeout: 10m
                   spec: {}
               - step:
-                  type: MergePR
-                  name: Merge PR
-                  identifier: mergePR
+                  name: Rolling Rollback
+                  identifier: rollingRollback
+                  type: K8sRollingRollback
+                  timeout: 10m
                   spec:
-                    deleteSourceBranch: true
-                  timeout: 10m
-              - step:
-                  type: GitOpsFetchLinkedApps
-                  name: Fetch Linked Apps
-                  identifier: fetchLinkedApps
-                  timeout: 10m
-                  spec: {}
-            rollbackSteps: []
+                    pruningEnabled: false
           service:
             serviceRef: kz_java_web_service
             serviceInputs:
@@ -102,11 +142,12 @@ pipeline:
                         - identifier: webapp
                           type: DockerRegistry
                           spec:
-                            tag: <+input>
-            gitBranch: main
+                            tag: <+pipeline.sequenceId>
           environment:
             environmentRef: development
-            deployToAll: true
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: minikube_java
         tags: {}
         failureStrategies:
           - onFailure:

@@ -1,0 +1,15 @@
+infrastructureDefinition:
+  name: minikube_java
+  identifier: minikube_java
+  description: Local Minikube namespace for the Java web app
+  tags: {}
+  orgIdentifier: default
+  projectIdentifier: default_project
+  environmentRef: development
+  deploymentType: Kubernetes
+  type: KubernetesDirect
+  spec:
+    connectorRef: likzlocalminikubedelegate
+    namespace: harness-java-demo
+    releaseName: release-<+INFRA_KEY>
+  allowSimultaneousDeployments: false
