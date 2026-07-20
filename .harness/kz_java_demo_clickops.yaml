@@ -161,6 +161,3 @@ pipeline:
               action:
                 type: StageRollback
         gitOpsEnabled: false
-        runMode:
-          type: Manual
-          timeout: 1m
