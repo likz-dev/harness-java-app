@@ -1,0 +1,13 @@
+infrastructureDefinition:
+  name: minikube_java
+  identifier: minikube_java
+  orgIdentifier: default
+  projectIdentifier: default_project
+  environmentRef: development
+  deploymentType: Kubernetes
+  type: KubernetesDirect
+  spec:
+    connectorRef: likzlocalminikubedelegate
+    namespace: default
+    releaseName: release-<+INFRA_KEY_SHORT_ID>
+  allowSimultaneousDeployments: false
