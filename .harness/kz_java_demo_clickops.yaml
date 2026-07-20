@@ -92,6 +92,17 @@ pipeline:
             rollbackSteps: []
           service:
             serviceRef: kz_java_web_service
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  artifacts:
+                    primary:
+                      sources:
+                        - identifier: webapp
+                          type: DockerRegistry
+                          spec:
+                            tag: <+input>
             gitBranch: main
           environment:
             environmentRef: development
