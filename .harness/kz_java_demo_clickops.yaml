@@ -1,5 +1,5 @@
 pipeline:
-  name: kz_java_demo_clickops
+  name: kz_java_demo
   identifier: kz_java_demo_clickops
   projectIdentifier: default_project
   orgIdentifier: default
@@ -103,3 +103,7 @@ pipeline:
                 - AllErrors
               action:
                 type: StageRollback
+        gitOpsEnabled: true
+        runMode:
+          type: Manual
+          timeout: 1m
