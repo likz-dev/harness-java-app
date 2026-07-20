@@ -4,11 +4,33 @@ service:
   serviceDefinition:
     type: Kubernetes
     spec:
-      appsetConfigs:
-        - appset:
-            agentIdentifier: harnessagent
-            identifier: 085ac6f7-a5af-55bf-8587-481b7c6fee86
-            appSetIdentifier: ""
+      artifacts:
+        primary:
+          primaryArtifactRef: webapp
+          sources:
+            - identifier: webapp
+              type: DockerRegistry
+              spec:
+                connectorRef: likzdevdockerhub
+                imagePath: likzdev/harness-java-web-app
+                tag: <+input>
+      manifests:
+        - manifest:
+            identifier: java_web_manifests
+            type: K8sManifest
+            spec:
+              store:
+                type: Github
+                spec:
+                  connectorRef: likzdevgithub
+                  repoName: harness-java-app
+                  gitFetchType: Branch
+                  branch: main
+                  paths:
+                    - app/k8s/templates
+              valuesPaths:
+                - app/k8s/values.yaml
+              skipResourceVersioning: false
   gitOpsEnabled: true
   orgIdentifier: default
   projectIdentifier: default_project
