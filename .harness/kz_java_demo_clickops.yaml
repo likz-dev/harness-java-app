@@ -103,7 +103,7 @@ pipeline:
                 - AllErrors
               action:
                 type: StageRollback
-        gitOpsEnabled: true
+        gitOpsEnabled: false
         runMode:
           type: Manual
           timeout: 1m
