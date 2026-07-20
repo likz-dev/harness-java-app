@@ -1,0 +1,105 @@
+pipeline:
+  name: kz_java_demo_clickops
+  identifier: kz_java_demo_clickops
+  projectIdentifier: default_project
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: likzdevgithub
+        repoName: harness-java-app
+        build: <+input>
+  stages:
+    - stage:
+        name: harness-java-build
+        identifier: harnessjavabuild
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+          buildIntelligence:
+            enabled: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: likzlocalminikubedelegate
+              namespace: harness-ci
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Run Test
+                  identifier: run_test
+                  spec:
+                    connectorRef: likzdevdockerhub
+                    image: maven:3.8-jdk-11
+                    shell: Sh
+                    command: |-
+                      cd app
+                      mvn -B clean test
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - app/target/surefire-reports/*.xml
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and push to Docker
+                  identifier: build_and_push_to_docker
+                  spec:
+                    connectorRef: likzdevdockerhub
+                    repo: likzdev/harness-java-web-app
+                    tags:
+                      - <+pipeline.sequenceId>
+                    context: app
+                    dockerfile: app/Dockerfile
+    - stage:
+        name: harness-java-deploy
+        identifier: harnessjavadeploy
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          gitOpsEnabled: true
+          execution:
+            steps:
+              - step:
+                  type: GitOpsUpdateReleaseRepo
+                  name: Update Release Repo
+                  identifier: updateReleaseRepo
+                  timeout: 10m
+                  spec: {}
+              - step:
+                  type: MergePR
+                  name: Merge PR
+                  identifier: mergePR
+                  spec:
+                    deleteSourceBranch: true
+                  timeout: 10m
+              - step:
+                  type: GitOpsFetchLinkedApps
+                  name: Fetch Linked Apps
+                  identifier: fetchLinkedApps
+                  timeout: 10m
+                  spec: {}
+            rollbackSteps: []
+          service:
+            serviceRef: kz_java_web_service
+            gitBranch: main
+          environment:
+            environmentRef: development
+            deployToAll: true
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
