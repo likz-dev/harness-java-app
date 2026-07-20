@@ -1,0 +1,9 @@
+harness_account_id       = "YOUR_ACCOUNT_ID"
+harness_delegate_token   = "YOUR_DELEGATE_TOKEN"
+harness_delegate_name    = "terraform-delegate"
+harness_deploy_mode      = "KUBERNETES"
+harness_namespace        = "harness-delegate-ng"
+harness_manager_endpoint = "https://app.harness.io"
+harness_delegate_image   = "us-docker.pkg.dev/gar-prod-setup/harness-public/harness/delegate:26.06.89501"
+harness_replicas         = 1
+harness_upgrader_enabled = true
