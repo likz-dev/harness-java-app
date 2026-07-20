@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${appName}">Sample Java App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&amp;family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css"/>
+  <style th:utext="| :root { --accent: ${accentHex}; } |"></style>
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <main class="hero">
+    <p class="eyebrow">Harness demo · Spring Boot</p>
+    <h1 class="brand" th:text="${appName}">Sample Java App</h1>
+    <p class="tagline">CI build → image → deploy</p>
+
+    <div class="status-row" role="status">
+      <span class="chip">
+        <span class="chip-label">version</span>
+        <span class="chip-value mono" th:text="${version}">1.0.0</span>
+      </span>
+      <span class="chip chip-accent">
+        <span class="swatch" aria-hidden="true"></span>
+        <span class="chip-label">variant</span>
+        <span class="chip-value mono" th:text="${color}">blue</span>
+      </span>
+    </div>
+  </main>
+
+  <footer class="ops">
+    <a href="/api/hello">/api/hello</a>
+    <a href="/api/version">/api/version</a>
+    <a href="/actuator/health">/actuator/health</a>
+  </footer>
+</body>
+</html>
