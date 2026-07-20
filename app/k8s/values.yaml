@@ -1,0 +1,12 @@
+name: harness-java-web-app
+replicas: 3
+
+# Resolved by Harness from the service artifact (Docker Hub image + tag)
+image: <+artifacts.primary.image>
+
+# Canary-friendly UI accent (override later if you want amber for demos)
+APP_COLOR: blue
+
+# Service / container ports
+servicePort: 80
+containerPort: 8080
