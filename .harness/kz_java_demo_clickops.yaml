@@ -100,9 +100,13 @@ pipeline:
                           includePipelineExecutionHistory: true
                           approvers:
                             userGroups:
-                              - account._all_users
+                              - account._account_all_users
+                              - org._organization_all_users
+                              - _project_all_users
                             minimumCount: 1
                             disallowPipelineExecutor: false
+                          isAutoRejectEnabled: false
+                          approverInputs: []
                     - step:
                         name: Canary Delete
                         identifier: canaryDelete
