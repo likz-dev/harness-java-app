@@ -4,8 +4,11 @@ replicas: 3
 # Resolved by Harness from the service artifact (Docker Hub image + tag)
 image: <+artifacts.primary.image>
 
-# Canary-friendly UI accent (override later if you want amber for demos)
-APP_COLOR: blue
+# Pipeline runtime input (default blue). Allowed: blue, green, amber, red, teal
+APP_COLOR: <+pipeline.variables.appColor>
+
+# Same as the Docker image tag deployed by this run
+APP_VERSION: <+artifacts.primary.tag>
 
 # Service / container ports
 servicePort: 80

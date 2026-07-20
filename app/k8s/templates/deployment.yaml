@@ -25,6 +25,8 @@ spec:
           env:
             - name: APP_COLOR
               value: {{ .Values.APP_COLOR | quote }}
+            - name: APP_VERSION
+              value: {{ .Values.APP_VERSION | quote }}
           readinessProbe:
             httpGet:
               path: /actuator/health

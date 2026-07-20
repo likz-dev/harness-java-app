@@ -10,6 +10,11 @@ pipeline:
         connectorRef: likzdevgithub
         repoName: harness-java-app
         build: <+input>
+  variables:
+    - name: appColor
+      type: String
+      description: UI accent color (blue, green, amber, red, teal)
+      value: <+input>.default(blue)
   stages:
     - stage:
         name: harness-java-build
@@ -95,7 +100,7 @@ pipeline:
                           includePipelineExecutionHistory: true
                           approvers:
                             userGroups:
-                              - account.account_admins
+                              - account._all_users
                             minimumCount: 1
                             disallowPipelineExecutor: false
                     - step:

@@ -134,7 +134,7 @@ curl -s http://localhost:8080/api/hello
 curl -s http://localhost:8080/actuator/health
 ```
 
-Open http://localhost:8080 — version and color chips should match `APP_COLOR` / image tag metadata.
+Open http://localhost:8080 — version and color chips should match `APP_VERSION` / `APP_COLOR` when set (e.g. `-e APP_VERSION=42 -e APP_COLOR=amber`).
 
 ---
 
@@ -183,8 +183,9 @@ make push DOCKERHUB_USER=myuser IMAGE_NAME=sample-java-app IMAGE_TAG=1.0.0
 
 | Variable / property | Where | Purpose |
 |---------------------|--------|---------|
-| `APP_COLOR` | Env at runtime | UI accent / canary variant (`blue`, `green`, `amber`, `red`, `teal`) |
-| `app.version` | Built from Maven `${project.version}` | Shown on `/` and `/api/*` |
+| `APP_COLOR` | Env at runtime / Harness `appColor` | UI accent (`blue`, `green`, `amber`, `red`, `teal`) |
+| `APP_VERSION` | Env at runtime / Harness artifact tag | Version shown on `/` and `/api/*` (defaults to Maven project version) |
+| `app.version` | Built from Maven `${project.version}` unless `APP_VERSION` is set | Fallback when env unset |
 | `server.port` | `8080` (default) | HTTP listen port |
 
 ---

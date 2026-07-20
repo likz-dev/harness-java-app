@@ -58,6 +58,7 @@ mvn -B spring-boot:run
 | `/actuator/health` | Health probe |
 
 `APP_COLOR` sets the UI accent / variant (`blue`, `green`, `amber`, `red`, `teal`). Default: `blue`.
+In Kubernetes / Harness CD, set env `APP_COLOR` and `APP_VERSION` (image tag shown on `/` and `/api/*`).
 
 ## Docker Hub (summary)
 
