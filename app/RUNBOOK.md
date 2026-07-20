@@ -60,7 +60,7 @@ Image reference: `${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}`
 
 ```bash
 cd /path/to/harness/app
-mvn -B test
+mvn -B clean test
 ```
 
 Expect: `Tests run: 2, Failures: 0` and `BUILD SUCCESS`.
@@ -98,7 +98,7 @@ Stop with `Ctrl+C`.
 
 ```bash
 cd /path/to/harness/app
-docker run --rm -v "$PWD":/w -w /w maven:3.8-jdk-11 mvn -B test
+docker run --rm -v "$PWD":/w -w /w maven:3.8-jdk-11 mvn -B clean test
 ```
 
 ### 3.2 Build the app image
@@ -206,7 +206,7 @@ make push DOCKERHUB_USER=myuser IMAGE_NAME=sample-java-app IMAGE_TAG=1.0.0
 
 - [ ] Docker running (`docker info`)
 - [ ] `cd` into `app/`
-- [ ] Tests green (`mvn -B test` **or** Docker Maven one-liner)
+- [ ] Tests green (`mvn -B clean test` **or** Docker Maven one-liner)
 - [ ] App responds on http://localhost:8080
 - [ ] `docker login` succeeded
 - [ ] Image pushed: `${DOCKERHUB_USER}/sample-java-app:${IMAGE_TAG}`

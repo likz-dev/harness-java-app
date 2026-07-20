@@ -38,10 +38,10 @@ mvn -version         # optional if using Docker-only workflow
 cd app
 
 # Tests (Docker — works without local Maven)
-docker run --rm -v "$PWD":/w -w /w maven:3.8-jdk-11 mvn -B test
+docker run --rm -v "$PWD":/w -w /w maven:3.8-jdk-11 mvn -B clean test
 
 # Or native Maven (requires JDK 11 + mvn)
-mvn -B test
+mvn -B clean test
 
 # Run locally via Maven
 mvn -B spring-boot:run

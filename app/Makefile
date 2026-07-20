@@ -7,10 +7,10 @@ IMAGE := $(DOCKERHUB_USER)/$(IMAGE_NAME):$(IMAGE_TAG)
 .PHONY: test package build push run
 
 test:
-	mvn -B test
+	mvn -B clean test
 
 package:
-	mvn -B -DskipTests=false package
+	mvn -B -DskipTests=false clean package
 
 build:
 	docker build -t $(IMAGE) .
