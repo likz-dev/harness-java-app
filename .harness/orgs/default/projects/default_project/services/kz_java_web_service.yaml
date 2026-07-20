@@ -1,0 +1,14 @@
+service:
+  name: kz_java_web_service
+  identifier: kz_java_web_service
+  serviceDefinition:
+    type: Kubernetes
+    spec:
+      appsetConfigs:
+        - appset:
+            agentIdentifier: harnessagent
+            identifier: 085ac6f7-a5af-55bf-8587-481b7c6fee86
+            appSetIdentifier: ""
+  gitOpsEnabled: true
+  orgIdentifier: default
+  projectIdentifier: default_project
