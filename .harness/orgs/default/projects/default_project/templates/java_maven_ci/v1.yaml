@@ -1,0 +1,51 @@
+template:
+  name: java_maven_ci
+  identifier: java_maven_ci
+  versionLabel: v1
+  type: Stage
+  projectIdentifier: default_project
+  orgIdentifier: default
+  tags: {}
+  spec:
+    type: CI
+    spec:
+      cloneCodebase: true
+      caching:
+        enabled: true
+        override: true
+      buildIntelligence:
+        enabled: true
+      infrastructure:
+        type: KubernetesDirect
+        spec:
+          connectorRef: <+input>
+          namespace: <+input>
+          automountServiceAccountToken: true
+          nodeSelector: {}
+          os: Linux
+      execution:
+        steps:
+          - step:
+              type: Run
+              name: Run Test
+              identifier: run_test
+              spec:
+                connectorRef: <+input>
+                image: <+input>.default(maven:3.8-jdk-11)
+                shell: Sh
+                command: <+input>
+                reports:
+                  type: JUnit
+                  spec:
+                    paths: <+input>
+          - step:
+              type: BuildAndPushDockerRegistry
+              name: Build and push to Docker
+              identifier: build_and_push_to_docker
+              spec:
+                connectorRef: <+input>
+                repo: <+input>
+                tags:
+                  - <+pipeline.sequenceId>
+                context: <+input>
+                dockerfile: <+input>
