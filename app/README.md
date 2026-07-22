@@ -1,90 +1,129 @@
 # Sample Java App
 
-Spring Boot 2.7 (Java 11) sample for CI demos: Maven build/test, Docker image, and a version/color UI ready for a later canary rollout.
+Spring Boot **2.7** (Java **11**) demo app for Harness CI/CD: Maven test, Docker image push, and **classic Kubernetes canary** deploy with a version/color UI.
 
-For step-by-step local deploy and Docker Hub publish instructions, see **[RUNBOOK.md](RUNBOOK.md)**.
+Operational detail (local Maven, Docker Hub push, troubleshooting): **[RUNBOOK.md](RUNBOOK.md)**.  
+Harness pipeline / service / infra live under [`.harness/`](../.harness/) at the repo root.
+
+## What it demonstrates
+
+| Capability | How |
+|------------|-----|
+| Unit tests | JUnit 5 via `mvn test` / Harness CI |
+| Container image | Multi-stage `Dockerfile` → Docker Hub (`likzdev/harness-java-web-app:<tag>`) |
+| K8s manifests | [`k8s/`](k8s/) Deployment + Service (Harness Go templates + `values.yaml`) |
+| Canary rollout | Harness CD: canary (1 pod) → approve → delete canary → rolling primary |
+| Visible canary signal | UI shows **version** (= image tag) and **variant** (`APP_COLOR`) |
 
 ## Prerequisites
 
 | Tool | Required for | Notes |
 |------|----------------|-------|
-| **Docker** | Build/run/push image; also an alternative to local Maven | Docker Desktop (or equivalent) running |
-| **JDK 11** | Native `mvn` / `spring-boot:run` | Skip if you only use Docker |
-| **Maven 3.8+** | Native `mvn test` / package / run | Skip if you only use `maven:3.8-jdk-11` via Docker |
-| **Docker Hub account** | `docker push` | Username + login credentials |
-| **make** (optional) | Shortcut targets in `Makefile` | Commands also work plain |
-
-### Install on macOS (Homebrew)
+| **Docker** | Build/run/push image; or run Maven in a container | Daemon must be running |
+| **JDK 11** + **Maven 3.8+** | Native `mvn` / `spring-boot:run` | Optional if you use `maven:3.8-jdk-11` via Docker |
+| **Docker Hub account** | `docker push` / Harness Build and Push | — |
+| **kubectl** + Minikube | Canary verify / cluster access | Cluster used by Harness delegate |
+| **make** (optional) | `Makefile` shortcuts | — |
 
 ```bash
-# Option A — native Maven + JDK
-brew install openjdk@11 maven
-
-# Option B — Docker only (no local JDK/Maven)
-# Install Docker Desktop, then use the docker run … maven:3.8-jdk-11 commands in the runbook.
+brew install openjdk@11 maven   # optional native toolchain
+docker info && kubectl version --client
 ```
 
-### Verify
-
-```bash
-docker info          # daemon must be running
-java -version        # optional if using Docker-only workflow
-mvn -version         # optional if using Docker-only workflow
-```
-
-## Quick start
+## Quick start (local)
 
 ```bash
 cd app
 
-# Tests (Docker — works without local Maven)
+# Tests (Docker — no local Maven required)
 docker run --rm -v "$PWD":/w -w /w maven:3.8-jdk-11 mvn -B clean test
 
-# Or native Maven (requires JDK 11 + mvn)
+# Or native
 mvn -B clean test
-
-# Run locally via Maven
 mvn -B spring-boot:run
-# → http://localhost:8080
+# optional: APP_COLOR=amber APP_VERSION=42 mvn -B spring-boot:run
 ```
+
+Open http://localhost:8080
 
 ## Endpoints
 
 | Path | Description |
 |------|-------------|
-| `/` | Landing page (version + color) |
-| `/api/hello` | JSON hello |
-| `/api/version` | JSON version metadata |
-| `/actuator/health` | Health probe |
+| `/` | Landing page (brand, version chip, color/variant chip) |
+| `/api/hello` | JSON: message, version, color |
+| `/api/version` | JSON: name, version, color |
+| `/actuator/health` | Health probe (used by K8s readiness/liveness) |
 
-`APP_COLOR` sets the UI accent / variant (`blue`, `green`, `amber`, `red`, `teal`). Default: `blue`.
-In Kubernetes / Harness CD, set env `APP_COLOR` and `APP_VERSION` (image tag shown on `/` and `/api/*`).
+## Configuration
 
-## Verify Harness canary vs stable (Minikube)
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `APP_COLOR` | `blue` | UI accent: `blue`, `green`, `amber` (or `yellow`), `red`, `teal` |
+| `APP_VERSION` | Maven `project.version` (e.g. `1.0.0`) | Version shown on `/` and `/api/*` |
 
-During a Harness canary step you get two Deployments:
+In Harness CD:
 
-- `harness-java-web-app` — stable / primary (`harness.io/track=stable`)
-- `harness-java-web-app-canary` — canary (`harness.io/track=canary`)
+- `APP_COLOR` ← pipeline variable **`appColor`** (dropdown at run time)
+- `APP_VERSION` ← Docker image tag (`<+artifacts.primary.tag>`, same as `<+pipeline.sequenceId>` from CI)
 
-`kubectl port-forward svc/...` sticks to **one** pod for the whole session, so refreshes usually never show the canary. Forward each Deployment in its own terminal (`port-forward` does not support `-l`):
+Wired in [`k8s/values.yaml`](k8s/values.yaml) and injected as env on the Deployment.
 
-```bash
-kubectl -n default port-forward deployment/harness-java-web-app 8080:8080          # stable (e.g. v14)
-# other terminal:
-kubectl -n default port-forward deployment/harness-java-web-app-canary 8081:8080   # canary (e.g. v15)
+## Kubernetes manifests
+
+```
+k8s/
+  values.yaml              # image, replicas, APP_COLOR, APP_VERSION
+  templates/
+    deployment.yaml        # probes on /actuator/health, port 8080
+    service.yaml           # ClusterIP 80 → 8080
 ```
 
-Or pick a pod by label:
+Harness service points at these paths; image is `<+artifacts.primary.image>`.
+
+## Harness CI → canary CD (overview)
+
+Pipeline [`kz_java_demo`](../.harness/kz_java_demo_clickops.yaml):
+
+1. **CI** — `mvn clean test`, then Build and Push `likzdev/harness-java-web-app:<+pipeline.sequenceId>`
+2. **CD (classic K8s, not GitOps)**  
+   - `K8sCanaryDeploy` (1 pod, track `canary`)  
+   - Manual approval  
+   - `K8sCanaryDelete`  
+   - `K8sRollingDeploy` (full replica set, track `stable`)
+
+During canary you temporarily have:
+
+| Deployment | Track label | Role |
+|------------|-------------|------|
+| `harness-java-web-app` | `harness.io/track=stable` | Current primary |
+| `harness-java-web-app-canary` | `harness.io/track=canary` | New version under test |
+
+## Verify canary vs stable (Minikube)
+
+`kubectl port-forward svc/...` sticks to **one** pod for the session, so refreshes usually never show the canary. Forward each Deployment instead (`port-forward` does **not** support `-l`):
+
+```bash
+kubectl -n default port-forward deployment/harness-java-web-app 8080:8080          # stable
+# other terminal:
+kubectl -n default port-forward deployment/harness-java-web-app-canary 8081:8080   # canary
+```
+
+Or resolve a pod by label:
 
 ```bash
 kubectl -n default port-forward pod/$(kubectl -n default get pod -l harness.io/track=stable -o jsonpath='{.items[0].metadata.name}') 8080:8080
 kubectl -n default port-forward pod/$(kubectl -n default get pod -l harness.io/track=canary -o jsonpath='{.items[0].metadata.name}') 8081:8080
 ```
 
-Open http://localhost:8080 for stable and http://localhost:8081 for canary.
+- Stable: http://localhost:8080  
+- Canary: http://localhost:8081  
+
+After approval and rolling deploy, the canary Deployment is removed and primary pods run the new tag.
 
 ## Docker Hub (summary)
+
+CI pushes `likzdev/harness-java-web-app`. For a manual local push (parameterized name):
 
 ```bash
 docker login
@@ -93,18 +132,19 @@ docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} .
 docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
 ```
 
-Full details, troubleshooting, and Makefile usage: **[RUNBOOK.md](RUNBOOK.md)**.
+See **[RUNBOOK.md](RUNBOOK.md)** for Makefile targets and full publish steps.
 
 ## Project layout
 
 ```
 app/
-  pom.xml
-  Dockerfile
+  pom.xml                 # Spring Boot 2.7, Java 11, JUnit via spring-boot-starter-test
+  Dockerfile              # maven:3.8-jdk-11 build → eclipse-temurin:11-jre
   Makefile
   README.md
   RUNBOOK.md
-  src/main/java/…      # Spring Boot app
-  src/main/resources/  # templates, CSS, application.properties
-  src/test/java/…      # JUnit tests
+  k8s/                    # Harness CD manifests (canary-ready)
+  src/main/java/…         # App, API, Thymeleaf home
+  src/main/resources/     # templates, CSS, application.properties
+  src/test/java/…         # JUnit 5 API tests
 ```
